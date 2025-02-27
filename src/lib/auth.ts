@@ -1,35 +1,43 @@
 // src/lib/auth.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import Cookies from "js-cookie";
-import { User, Session } from "@/types/auth";
+import axios from "axios";
+
+type User = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  kycStatus: string;
+};
+
+type Session = {
+  id: string;
+  browser: string;
+  ipAddress: string;
+  deviceInfo: string;
+};
 
 type AuthState = {
   user: User | null;
   session: Session | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, session: Session) => void;
+  setAuth: (user: User, session?: Session) => void;
   logout: () => void;
+  checkAuth: () => Promise<boolean>;
 };
 
-const cookieStorage = {
-  getItem: (name: string) => {
-    const cookieValue = Cookies.get(name);
-    return cookieValue ? JSON.parse(cookieValue) : null;
+const api = axios.create({
+  baseURL: "http://localhost/api/users/auth/",
+  headers: {
+    "Content-Type": "application/json",
   },
-  setItem: (name: string, value: any) => {
-    Cookies.set(name, JSON.stringify(value), {
-      expires: 7,
-      path: "/",
-      sameSite: "strict",
-    });
-  },
-  removeItem: (name: string) => Cookies.remove(name),
-};
+  withCredentials: true, // Important: This allows cookies to be sent and received
+});
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       session: null,
       isAuthenticated: false,
@@ -49,10 +57,33 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
         });
       },
+      checkAuth: async () => {
+        try {
+          // Check session validity with the backend
+          console.log("Checking authentication status...");
+          const response = await api.get("/check-session");
+          console.log("Auth check response:", response.data);
+
+          if (response.data.user) {
+            // Update the auth state with the latest user data
+            set({
+              user: response.data.user,
+              session: response.data.session || get().session,
+              isAuthenticated: true,
+            });
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          // Clear auth state if the check fails
+          set({ user: null, session: null, isAuthenticated: false });
+          return false;
+        }
+      },
     }),
     {
       name: "auth-storage",
-      storage: cookieStorage,
     }
   )
 );

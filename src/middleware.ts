@@ -13,30 +13,18 @@ export const config = {
 };
 
 export function middleware(request: NextRequest) {
-  const authCookie = request.cookies.get("auth-storage");
+  // Check for authentication cookies
+  const accessToken = request.cookies.get("access_token");
+  const refreshToken = request.cookies.get("refresh_token");
 
   console.log("Middleware checking route:", request.nextUrl.pathname);
+  console.log("Access token exists:", !!accessToken);
+  console.log("Refresh token exists:", !!refreshToken);
 
-  let isAuthenticated = false;
-  let sessionData = null;
-
-  try {
-    if (authCookie?.value) {
-      const authData = JSON.parse(authCookie.value);
-      isAuthenticated = !!authData?.state?.session?.id;
-      sessionData = authData?.state?.session;
-      console.log("Auth data:", {
-        isAuthenticated,
-        sessionId: sessionData?.id,
-      });
-    }
-  } catch (error) {
-    console.error("Error parsing auth cookie:", error);
-  }
-
+  const isAuthenticated = !!accessToken || !!refreshToken;
   const path = request.nextUrl.pathname;
 
-  // Protected routes
+  // Protect routes that require authentication
   if (
     path.startsWith("/dashboard") ||
     path.startsWith("/profile") ||
@@ -47,11 +35,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     console.log("Access granted to protected route");
-    const response = NextResponse.next();
-    return response;
   }
 
-  // Auth routes (login/register)
+  // Redirect authenticated users away from auth pages
   if ((path === "/login" || path === "/register") && isAuthenticated) {
     console.log(
       "Authenticated user accessing auth route, redirecting to dashboard"

@@ -1,13 +1,13 @@
 "use client";
 // src/app/(auth)/login/page.tsx
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader2, Mail, LockKeyhole } from "lucide-react";
 import CustomInput from "@/components/ui/custom-input";
 import AuthFooter from "@/components/ui/auth-footer";
+// import { useEffect } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -29,12 +29,27 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      console.log(data);
+      console.log("Submitting login form:", data);
       await login(data);
     } catch (error) {
       console.error("Login error:", error);
+      form.setError("root", {
+        type: "manual",
+        message: "Login failed. Please check your credentials.",
+      });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="mt-2 text-gray-500">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -77,15 +92,21 @@ export default function LoginPage() {
               )}
             </div>
 
+            {form.formState.errors.root && (
+              <p className="text-sm text-red-600 text-center">
+                {form.formState.errors.root.message}
+              </p>
+            )}
+
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={form.formState.isSubmitting}
               className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-4 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin inline-block mr-2 h-5 w-5" />
-                  Loading...
+                  Signing in...
                 </>
               ) : (
                 "Sign In"
