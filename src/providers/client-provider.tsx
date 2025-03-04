@@ -33,7 +33,13 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
     console.log("Pathname:", pathname);
     console.log("Is authenticated:", isAuthenticated);
 
-    const protectedRoutes = ["/dashboard", "/profile", "/settings"];
+    const protectedRoutes = [
+      "/dashboard",
+      "/profile",
+      "/settings",
+      "/wallet",
+      "/transactions",
+    ];
     const authRoutes = ["/login", "/register"];
 
     const isProtectedRoute = protectedRoutes.some((route) =>
