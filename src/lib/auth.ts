@@ -22,6 +22,7 @@ type AuthState = {
   user: User | null;
   session: Session | null;
   isAuthenticated: boolean;
+  lastTokenRefresh: number; // timestamp of last refresh
   setAuth: (user: User, session?: Session) => void;
   logout: () => void;
   checkAuth: () => Promise<boolean>;
@@ -32,7 +33,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Important: This allows cookies to be sent and received
+  withCredentials: true,
 });
 
 export const useAuthStore = create<AuthState>()(
@@ -41,12 +42,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       session: null,
       isAuthenticated: false,
+      lastTokenRefresh: 0,
       setAuth: (user, session) => {
         console.log("Setting auth state:", { user, session });
         set({
           user,
           session,
           isAuthenticated: true,
+          lastTokenRefresh: Date.now(),
         });
       },
       logout: () => {
@@ -55,29 +58,75 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           session: null,
           isAuthenticated: false,
+          lastTokenRefresh: 0,
         });
       },
       checkAuth: async () => {
         try {
-          // Check session validity with the backend
-          console.log("Checking authentication status...");
+          const currentState = get();
+          const timeSinceRefresh = Date.now() - currentState.lastTokenRefresh;
+          const FIFTEEN_MINUTES = 15 * 60 * 1000;
+
+          // If we have a recent token refresh (less than 15 minutes ago), use cached user data
+          if (
+            currentState.isAuthenticated &&
+            currentState.user &&
+            timeSinceRefresh < FIFTEEN_MINUTES
+          ) {
+            console.log(
+              "Using cached authentication - last refresh was",
+              Math.round(timeSinceRefresh / 1000 / 60),
+              "minutes ago"
+            );
+            return true;
+          }
+
+          // Otherwise check with the server
+          console.log("Checking authentication with server...");
           const response = await api.get("/check-session");
           console.log("Auth check response:", response.data);
 
-          if (response.data.user) {
+          if (response.data && response.data.user) {
             // Update the auth state with the latest user data
             set({
               user: response.data.user,
               session: response.data.session || get().session,
               isAuthenticated: true,
+              lastTokenRefresh: Date.now(),
             });
             return true;
           }
           return false;
         } catch (error) {
           console.error("Auth check failed:", error);
-          // Clear auth state if the check fails
-          set({ user: null, session: null, isAuthenticated: false });
+
+          // Check for 401 unauthorized errors
+          if (error.response && error.response.status === 401) {
+            console.log("Received 401 Unauthorized response");
+            set({
+              user: null,
+              session: null,
+              isAuthenticated: false,
+              lastTokenRefresh: 0,
+            });
+            console.log("Cleared the Auth State due to 401");
+            return false;
+          }
+
+          // Check for network errors
+          if (error.message === "Network Error" && get().user) {
+            console.log("Network error but using cached user data");
+            return true;
+          }
+
+          // Otherwise clear auth state
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            lastTokenRefresh: 0,
+          });
+          console.log("Cleared the Auth State");
           return false;
         }
       },

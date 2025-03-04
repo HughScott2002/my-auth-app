@@ -3,6 +3,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState, useRef } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
 // Constants for token expiry
 const ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -82,7 +83,7 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex flex-col justify-center items-center">
         <div className="px-4 py-6 sm:px-0">
           {/* Session Status Card */}
           <div className="mb-6 bg-white rounded-lg shadow p-4">
@@ -187,6 +188,9 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        <Link href={"/settings"} className="text-blue-500 underline">
+          Change to settings page
+        </Link>
       </main>
     </div>
   );

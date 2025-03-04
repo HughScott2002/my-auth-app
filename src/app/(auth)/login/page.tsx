@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { Loader2, Mail, LockKeyhole } from "lucide-react";
 import CustomInput from "@/components/ui/custom-input";
 import AuthFooter from "@/components/ui/auth-footer";
-// import { useEffect } from "react";
+import ServerStatus from "@/components/ui/server-status";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -17,7 +17,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, isServerDown } = useAuth();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -33,10 +33,7 @@ export default function LoginPage() {
       await login(data);
     } catch (error) {
       console.error("Login error:", error);
-      form.setError("root", {
-        type: "manual",
-        message: "Login failed. Please check your credentials.",
-      });
+      // Form error is now handled in the mutation's onError
     }
   };
 
@@ -59,6 +56,8 @@ export default function LoginPage() {
             Log In To Your Account
           </h1>
         </header>
+
+        <ServerStatus isDown={isServerDown} />
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
@@ -92,15 +91,9 @@ export default function LoginPage() {
               )}
             </div>
 
-            {form.formState.errors.root && (
-              <p className="text-sm text-red-600 text-center">
-                {form.formState.errors.root.message}
-              </p>
-            )}
-
             <button
               type="submit"
-              disabled={form.formState.isSubmitting}
+              disabled={form.formState.isSubmitting || isServerDown}
               className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-4 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {form.formState.isSubmitting ? (
@@ -112,6 +105,12 @@ export default function LoginPage() {
                 "Sign In"
               )}
             </button>
+
+            {isServerDown && (
+              <p className="text-sm text-amber-600 text-center">
+                You can try again when the server is back online.
+              </p>
+            )}
           </div>
         </form>
 
