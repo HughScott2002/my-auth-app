@@ -196,7 +196,6 @@ export default function DashboardPage() {
             <WalletCard />
             {/* Transactions Wallet Card */}
             <Transactions />
-            {/* Notifications Wallet Card */}
           </div>
         </div>
         <Link href={"/settings"} className="text-blue-500 underline">
