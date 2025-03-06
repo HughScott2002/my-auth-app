@@ -6,6 +6,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import HunzoNotification from "@/components/notifications";
 import WalletCard from "@/components/wallet-card";
+import Transactions from "@/components/transaction";
 
 // Constants for token expiry
 const ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -194,6 +195,7 @@ export default function DashboardPage() {
             {/* User Wallet Card */}
             <WalletCard />
             {/* Transactions Wallet Card */}
+            <Transactions />
             {/* Notifications Wallet Card */}
           </div>
         </div>
