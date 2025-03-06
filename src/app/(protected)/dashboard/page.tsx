@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import HunzoNotification from "@/components/notifications";
+import WalletCard from "@/components/wallet-card";
 
 // Constants for token expiry
 const ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -191,59 +192,7 @@ export default function DashboardPage() {
               </div>
             </div>
             {/* User Wallet Card */}
-            <div className="border-4 border-dashed border-gray-200 rounded-lg p-4">
-              <h2 className="text-2xl font-bold mb-4">Wallet Information</h2>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg border-b pb-2">
-                      Wallet Details
-                    </h3>
-                    <p>
-                      <span className="font-medium">Email:</span> {user?.email}
-                    </p>
-                    <p>
-                      <span className="font-medium">First Name:</span>{" "}
-                      {user?.firstName || "Not set"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Last Name:</span>{" "}
-                      {user?.lastName || "Not set"}
-                    </p>
-                    <p>
-                      <span className="font-medium">KYC Status:</span>{" "}
-                      <span className="capitalize">{user?.kycStatus}</span>
-                    </p>
-                    <p>
-                      <span className="font-medium">User ID:</span> {user?.id}
-                    </p>
-                  </div>
-                  {session && (
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg border-b pb-2">
-                        Session Information
-                      </h3>
-                      <p>
-                        <span className="font-medium">Browser:</span>{" "}
-                        {session.browser}
-                      </p>
-                      <p>
-                        <span className="font-medium">Device:</span>{" "}
-                        {session.deviceInfo}
-                      </p>
-                      <p>
-                        <span className="font-medium">IP Address:</span>{" "}
-                        {session.ipAddress}
-                      </p>
-                      <p>
-                        <span className="font-medium">Session ID:</span>{" "}
-                        {session.id}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <WalletCard />
             {/* Transactions Wallet Card */}
             {/* Notifications Wallet Card */}
           </div>
