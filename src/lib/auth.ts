@@ -99,9 +99,9 @@ export const useAuthStore = create<AuthState>()(
           return false;
         } catch (error) {
           console.error("Auth check failed:", error);
+          // console.log(typeof error.status);
 
-          // Check for 401 unauthorized errors
-          if (error.response && error.response.status === 401) {
+          if (error.status === 401) {
             console.log("Received 401 Unauthorized response");
             set({
               user: null,
@@ -110,8 +110,22 @@ export const useAuthStore = create<AuthState>()(
               lastTokenRefresh: 0,
             });
             console.log("Cleared the Auth State due to 401");
+
             return false;
           }
+          // // Check for 401 unauthorized errors
+          // if (error.response && error.response.status === 401) {
+          //   console.log("Received 401 Unauthorized response");
+          //   set({
+          //     user: null,
+          //     session: null,
+          //     isAuthenticated: false,
+          //     lastTokenRefresh: 0,
+          //   });
+          //   console.log("Cleared the Auth State due to 401");
+
+          //   return false;
+          // }
 
           // Check for network errors
           if (error.message === "Network Error" && get().user) {
