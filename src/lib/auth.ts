@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("Auth check failed:", error);
           // console.log(typeof error.status);
-
+          //TODO: When there is no Access and Refresh token it needs to seemlessly redirect to login and not just shit itself
           if (error.status === 401) {
             console.log("Received 401 Unauthorized response");
             set({
