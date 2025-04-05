@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { format, isToday, isYesterday } from "date-fns";
 import InfiniteScroll from "react-infinite-scroll-component";
+import Image from "next/image";
 
 // Simple classnames utility to replace cn
 const classNames = (...classes: (string | boolean | undefined)[]) => {
@@ -174,7 +175,7 @@ function NotificationItem({ data }: { data: Notification }) {
     <div className="flex gap-2 w-full">
       {data.icon && (
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
-          <img
+          <Image
             src={data.icon}
             alt={data.label}
             className="w-full h-full object-cover"
